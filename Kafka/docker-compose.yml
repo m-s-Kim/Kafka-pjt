@@ -1,0 +1,71 @@
+services:
+  postgresql:
+    image: postgres
+    restart: always
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment: 
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: kafka
+    volumes:
+      - ./data/postgres/:/var/lib/postgresql/data
+  kafka:
+    image: bitnami/kafka:3.2-debian-12
+    restart: unless-stopped
+    ports:
+      - '10000:9094'
+    environment:
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+      - KAFKA_CFG_BROKER_ID=0
+      - KAFKA_CFG_NODE_ID=0
+      - KAFKA_KRAFT_CLUSTER_ID=HsDBs9l6UUmQq7Y5E6bNlw
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,EXTERNAL://127.0.0.1:10000
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+    volumes:
+      - "kafka:/bitnami/kafka"
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    restart: unless-stopped
+    ports:
+      - '8090:8080'
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=Local-Kraft-Cluster
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
+      - DYNAMIC_CONFIG_ENABLED=true
+      - KAFKA_CLUSTERS_0_AUDIT_TOPICAUDITENABLED=true
+      - KAFKA_CLUSTERS_0_AUDIT_CONSOLEAUDITENABLED=true
+  kafka-connect:
+      image: confluentinc/cp-kafka-connect:latest
+      restart: always
+      container_name: kafka-connect
+      environment:
+          CONNECT_BOOTSTRAP_SERVERS: kafka:9092
+          CONNECT_REST_ADVERTISED_HOST_NAME: connect
+          CONNECT_GROUP_ID: "kafka-connect-group"
+          CONNECT_CONFIG_STORAGE_TOPIC: "kafka-connect-configs"
+          CONNECT_OFFSET_STORAGE_TOPIC: "kafka-connect-offsets"
+          CONNECT_STATUS_STORAGE_TOPIC: "kafka-connect-status"
+          CONNECT_KEY_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+          CONNECT_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+          CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE: "false"
+          CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: "false"
+          CONNECT_REST_ADVERTISED_LISTENER: "http://kafka-connect:8083"
+          CONNECT_REST_PORT: "8083"
+      ports:
+        - "8083:8083"
+      volumes:
+        - ./plugins:/usr/share/java
+
+
+
+volumes:
+  kafka:
+    driver: local

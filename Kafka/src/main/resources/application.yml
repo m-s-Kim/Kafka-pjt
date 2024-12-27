@@ -1,0 +1,41 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: Kafka
+  kafka:
+    bootstrap-servers: localhost:10000 # Kafka 브로커 주소 (여러 개일 경우 쉼표로 구분)
+    consumer:
+      group-id: my-group              # Consumer Group ID
+      auto-offset-reset: earliest     # 컨슈머가 읽기 시작할 위치 (earliest, latest 등)
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      enable-auto-commit: true
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/kafka?ssl=false
+    username: postgres
+    password: 1234
+  
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+    generate-ddl: true
+    properties:
+      hibernate:
+        format_sql: true  
+        use_sql_comments: true  
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.springframework.jdbc.core.JdbcTemplate: DEBUG
+    org.apache.kafka.clients.NetworkClient: WARN
+    org.hibernate.type.descriptor.sql.BasicBinder: WARN 
