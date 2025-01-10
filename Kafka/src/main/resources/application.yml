@@ -5,7 +5,7 @@ spring:
   application:
     name: Kafka
   kafka:
-    bootstrap-servers: localhost:10000 # Kafka 브로커 주소 (여러 개일 경우 쉼표로 구분)
+    bootstrap-servers: localhost:10000,localhost:10001,localhost:10002 # Kafka 브로커 주소 (여러 개일 경우 쉼표로 구분)
     consumer:
       group-id: my-group              # Consumer Group ID
       auto-offset-reset: earliest     # 컨슈머가 읽기 시작할 위치 (earliest, latest 등)
@@ -31,8 +31,8 @@ spring:
     generate-ddl: true
     properties:
       hibernate:
-        format_sql: true  
-        use_sql_comments: true  
+        format_sql: true
+        use_sql_comments: true
 logging:
   level:
     org.hibernate.SQL: DEBUG
