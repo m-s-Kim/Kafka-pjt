@@ -12,7 +12,8 @@ services:
     volumes:
       - ./data/postgres/:/var/lib/postgresql/data
     networks:
-      - kafka-network  
+      - kafka-network
+
   kafka:
     image: bitnami/kafka:3.2-debian-12
     restart: unless-stopped
@@ -23,26 +24,89 @@ services:
       - KAFKA_CFG_BROKER_ID=0
       - KAFKA_CFG_NODE_ID=0
       - KAFKA_KRAFT_CLUSTER_ID=HsDBs9l6UUmQq7Y5E6bNlw
-      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
+#      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093,1@kafka2:9093,2@kafka3:9093
       - KAFKA_CFG_PROCESS_ROLES=controller,broker
       - ALLOW_PLAINTEXT_LISTENER=yes
       - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
       - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,EXTERNAL://127.0.0.1:10000
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT
       - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
-      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+#      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      - KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR=3
+      - KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=3
+      - KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR=2
+      - KAFKA_CFG_DEFAULT_REPLICATION_FACTOR=2
     volumes:
       - "kafka:/bitnami/kafka"
     networks:
       - kafka-network
+
+  kafka2:
+      image: bitnami/kafka:3.2-debian-12
+      ports:
+        - '10001:9094'
+      environment:
+        # KRaft settings
+        - KAFKA_CFG_BROKER_ID=1
+        - KAFKA_CFG_NODE_ID=1
+        - KAFKA_KRAFT_CLUSTER_ID=HsDBs9l6UUmQq7Y5E6bNlw
+        - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093,1@kafka2:9093,2@kafka3:9093
+        - KAFKA_CFG_PROCESS_ROLES=controller,broker
+        # Listeners
+        - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
+        - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka2:9092,EXTERNAL://127.0.0.1:10001
+        - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT
+        - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+        - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+        # Clustering
+        - KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR=3
+        - KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=3
+        - KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR=2
+        - KAFKA_CFG_DEFAULT_REPLICATION_FACTOR=2
+      volumes:
+        - "kafka2:/bitnami/kafka"
+      networks:
+        - kafka-network
+  kafka3:
+    image: bitnami/kafka:3.2-debian-12
+    ports:
+      - '10002:9094'
+    environment:
+      # KRaft settings
+      - KAFKA_CFG_NODE_ID=2
+      - KAFKA_CFG_BROKER_ID=2
+      - KAFKA_KRAFT_CLUSTER_ID=HsDBs9l6UUmQq7Y5E6bNlw
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093,1@kafka2:9093,2@kafka3:9093
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      # Listeners
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka3:9092,EXTERNAL://127.0.0.1:10002
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+      # Clustering
+      - KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR=3
+      - KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=3
+      - KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR=2
+      - KAFKA_CFG_DEFAULT_REPLICATION_FACTOR=2
+    volumes:
+      - "kafka3:/bitnami/kafka"
+    networks:
+      - kafka-network
+
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     restart: unless-stopped
+    depends_on:
+     - kafka
+     - kafka2
+     - kafka3		
     ports:
       - '8090:8080'
     environment:
       - KAFKA_CLUSTERS_0_NAME=Local-Kraft-Cluster
-      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092,kafka2:9092,kafka3:9092
       - DYNAMIC_CONFIG_ENABLED=true
       - KAFKA_CLUSTERS_0_AUDIT_TOPICAUDITENABLED=true
       - KAFKA_CLUSTERS_0_AUDIT_CONSOLEAUDITENABLED=true
@@ -55,7 +119,7 @@ services:
     ports:
       - '8083:8083'
     environment:
-      CONNECT_BOOTSTRAP_SERVERS: kafka:9092
+      CONNECT_BOOTSTRAP_SERVERS: kafka:9092,kafka2:9092,kafka3:9092
       CONNECT_REST_LISTENER: http://0.0.0.0:8083
       CONNECT_GROUP_ID: "connect-cluster"
       CONNECT_CONFIG_STORAGE_TOPIC: "connect-configs"
@@ -73,6 +137,7 @@ services:
       - "./connectors:/etc/kafka-connect/jars"
     networks:
      - kafka-network
+
   my-mysql:
     image: mysql:8
     environment:
@@ -85,10 +150,16 @@ services:
     volumes:
      - ./mysql_data:/var/lib/mysql
     networks:
-     - kafka-network	 
+     - kafka-network
+
 volumes:
   kafka:
     driver: local
+  kafka2:
+    driver: local
+  kafka3:
+    driver: local
+
 networks:
   kafka-network:
     driver: bridge	
