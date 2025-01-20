@@ -66,7 +66,7 @@ public class KafkaService {
     
     /**
 	 * 
-	 * @param topic
+	 * @param request
 	 * @param message
 	 */
     @Transactional
@@ -100,6 +100,12 @@ public class KafkaService {
     public void listentest(ConsumerRecord<String, String> record) {
     	insertKafkaMsg(record);
     }
+    
+    @KafkaListener(topics = "zzz", groupId = "my-group")
+    public void listentest2(ConsumerRecord<String, String> record) {
+    	insertKafkaMsg(record);
+    }
+    
     
     /**
      * pub , sub 모든 메시지 조회
@@ -217,7 +223,5 @@ public class KafkaService {
         kafkaRecvData.setKey(key);
         kafkaRecvRepository.save(kafkaRecvData);
     }
-    
-    
     
 }

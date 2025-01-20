@@ -60,7 +60,7 @@ public class KafkaController {
 	
 	
 	@GetMapping("/{id}/message")
-	public ResponseEntity<?> writeArticle(@PathVariable String id){
+	public ResponseEntity<?> getMessage(@PathVariable String id){
 		return ResponseEntity.ok(kafkaService.getByKey(id));
 	}
 
@@ -78,27 +78,27 @@ public class KafkaController {
 	
 	
 	
-	@PostMapping("/send-partition")
-	public void sendPartitionMsg(
-		    @RequestBody(required = false) KafkaMessageRequest jsonRequest,
-		    @RequestParam(required = false) String text,
-		    @RequestParam(required = false) String topic,
-		    @RequestParam(required = false) String partition
-		    ) {
-		    
-		
-	    String resolvedText = (jsonRequest != null) ? jsonRequest.getText() : text;
-	    String resolvedTopic = (jsonRequest != null) ? jsonRequest.getTopic() : topic;
-	    String resolvedPartition = (jsonRequest != null) ? jsonRequest.getPartition() : partition;
-	    if (resolvedText == null || resolvedTopic == null) {
-	        throw new IllegalArgumentException("Invalid request data");
-	    }
-
-	    
-	    int chgTypePartition = Integer.parseInt(resolvedPartition);
-	    
-	    kafkaPartitionService.sendMessageToPartition(resolvedTopic, chgTypePartition, resolvedText);
-	}
+//	@PostMapping("/send-partition")
+//	public void sendPartitionMsg(
+//		    @RequestBody(required = false) KafkaMessageRequest jsonRequest,
+//		    @RequestParam(required = false) String text,
+//		    @RequestParam(required = false) String topic,
+//		    @RequestParam(required = false) String partition
+//		    ) {
+//		    
+//		
+//	    String resolvedText = (jsonRequest != null) ? jsonRequest.getText() : text;
+//	    String resolvedTopic = (jsonRequest != null) ? jsonRequest.getTopic() : topic;
+//	    String resolvedPartition = (jsonRequest != null) ? jsonRequest.getPartition() : partition;
+//	    if (resolvedText == null || resolvedTopic == null) {
+//	        throw new IllegalArgumentException("Invalid request data");
+//	    }
+//
+//	    
+//	    int chgTypePartition = Integer.parseInt(resolvedPartition);
+//	    
+//	    kafkaPartitionService.sendMessageToPartition(resolvedTopic, chgTypePartition, resolvedText);
+//	}
 	
 	/**
 	 * 특정 토픽 및 특정 키값에 메시지 보내기

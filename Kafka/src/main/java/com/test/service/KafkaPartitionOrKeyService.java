@@ -73,17 +73,12 @@ public class KafkaPartitionOrKeyService {
     	kafkaTemplate.send(topic, partition, null, message);
     	log.info("Sent message [%s] to topic [%s], partition [%d]%n", message, topic, partition);
     	
-    	 KafkaSendData kafkaSendData  = new KafkaSendData();
-         kafkaSendData.setSendData(message); 
-         kafkaSendData.setBaseDt(formattedDate);
-         kafkaSendData.setTopic(topic);
-         kafkaSendData.setPartition(String.valueOf(partition));
-         kafkaSendRepository.save(kafkaSendData); 
+    	KafkaSendData kafkaSendData  = new KafkaSendData();
+    	kafkaSendData.setSendData(message); 
+    	kafkaSendData.setBaseDt(formattedDate);
+    	kafkaSendData.setTopic(topic);
+    	kafkaSendData.setPartition(String.valueOf(partition));
+    	kafkaSendRepository.save(kafkaSendData); 
     	
     }
-	
-	
-	
-	
-
 }
