@@ -11,8 +11,6 @@ services:
       POSTGRES_DB: kafka
     volumes:
       - ./data/postgres/:/var/lib/postgresql/data
-    networks:
-      - kafka-network
 
   kafka:
     image: bitnami/kafka:3.2-debian-12
@@ -33,6 +31,7 @@ services:
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT
       - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
 #      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      # Clustering
       - KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR=3
       - KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=3
       - KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR=2
@@ -44,6 +43,7 @@ services:
 
   kafka2:
       image: bitnami/kafka:3.2-debian-12
+      restart: unless-stopped
       ports:
         - '10001:9094'
       environment:
@@ -68,8 +68,10 @@ services:
         - "kafka2:/bitnami/kafka"
       networks:
         - kafka-network
+
   kafka3:
     image: bitnami/kafka:3.2-debian-12
+    restart: unless-stopped
     ports:
       - '10002:9094'
     environment:
@@ -140,6 +142,7 @@ services:
 
   my-mysql:
     image: mysql:8
+    restart: unless-stopped
     environment:
        MYSQL_ROOT_PASSWORD: 1234
        MYSQL_DATABASE: sinkdb
