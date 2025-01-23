@@ -45,6 +45,7 @@ dependencies {
 	
 	// swagger 
 	implementation 'org.springdoc:springdoc-openapi-ui:1.7.0'
+	implementation 'mysql:mysql-connector-java:8.0.31'
 
 	
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
