@@ -99,7 +99,6 @@ services:
     container_name: kafka3
     ports:
       - '10002:9094'
-      - '9092:9092'
     environment:
       # KRaft settings
       - KAFKA_CFG_NODE_ID=2
