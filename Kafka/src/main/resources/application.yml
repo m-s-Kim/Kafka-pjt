@@ -15,9 +15,14 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/kafka?ssl=false
+    url: jdbc:postgresql://localhost:5432/kafka?sslmode=disable
+    hikari:
+      connection-timeout: 30000
+    #driver-class-name: com.mysql.cj.jdbc.Driver
+    #url: jdbc:mysql://my-mysql:3306/sinkdb?ssl=false
     username: postgres
     password: 1234
   
